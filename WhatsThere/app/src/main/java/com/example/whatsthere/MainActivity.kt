@@ -21,6 +21,7 @@ import com.example.whatsthere.ui.SingleChatScreen
 import com.example.whatsthere.ui.SingleStatusScreen
 import com.example.whatsthere.ui.StatusListScreen
 import com.example.whatsthere.ui.theme.WhatsThereTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 sealed class DestinationScreen(val route: String) {
     object Signup : DestinationScreen("signup")
@@ -35,7 +36,7 @@ sealed class DestinationScreen(val route: String) {
         fun createRoute(id: String?) = "status/$id"
     }
 }
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
