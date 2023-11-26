@@ -1,5 +1,6 @@
 package com.example.whatsthere
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,4 +16,7 @@ class CAViewModel @Inject constructor(
     val storage: FirebaseStorage
 
     ): ViewModel() {
+
+        val inProgress = mutableStateOf(false)
+
 }
