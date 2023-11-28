@@ -32,7 +32,8 @@ class CAViewModel @Inject constructor(
     val userData = mutableStateOf<UserData?>(null)
 
     init {
-        auth.signOut() //little cheat to work with login
+        //auth.signOut() //little cheat to work with login
+        //onLogout() //even better cheat :D
         val currentUser = auth.currentUser
         singedIn.value = currentUser != null
         currentUser?.uid?.let { uid ->
@@ -70,6 +71,27 @@ class CAViewModel @Inject constructor(
 
     }
 
+    fun onLogin(email: String, pass:String){
+        if (email.isEmpty() or pass.isEmpty()){
+            handleException(customMessage = "Please fill in all fields")
+            return
+        }
+        inProgress.value = true
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful){
+                    singedIn.value = true
+                    inProgress.value = false
+                    auth.currentUser?.uid?.let {
+                        getUserData(it)
+                    }
+                }else handleException(task.exception, "Login failed")
+            }
+            .addOnFailureListener {
+                handleException(it, "Login has failed")
+            }
+    }
+
     private fun createOrUpdateProfile(
 
         name: String? = null,
@@ -81,9 +103,9 @@ class CAViewModel @Inject constructor(
         val uid = auth.currentUser?.uid
         val userData = UserData(
             userId = uid,
-            name = name,
-            number = number,
-            imageUrl = imageUrl
+            name = name ?: userData.value?.name,
+            number = number ?: userData.value?.number,
+            imageUrl = imageUrl ?: userData.value?.imageUrl
         )
 
         uid?.let { uid ->
@@ -130,6 +152,13 @@ class CAViewModel @Inject constructor(
                     inProgress.value = false
                 }
             }
+    }
+
+    fun onLogout(){
+        auth.signOut()
+        singedIn.value = false
+        userData.value = null
+        popupNotification.value = Event("Logged out")
     }
 
     private fun handleException(exception: Exception? = null, customMessage: String = ""){
