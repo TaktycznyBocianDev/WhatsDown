@@ -8,6 +8,7 @@ import com.example.whatsthere.data.Event
 import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
@@ -27,6 +28,17 @@ class CAViewModel @Inject constructor(
 
     val popupNotification = mutableStateOf<Event<String>?>(null)
     val singedIn = mutableStateOf(false)
+
+    val userData = mutableStateOf<UserData?>(null)
+
+    init {
+        auth.signOut() //little cheat to work with login
+        val currentUser = auth.currentUser
+        singedIn.value = currentUser != null
+        currentUser?.uid?.let { uid ->
+            getUserData(uid)
+        }
+    }
 
     fun onSignup(name: String, number: String, email: String, password: String){
         if (name.isEmpty() or number.isEmpty() or email.isEmpty() or password.isEmpty()){
@@ -94,6 +106,7 @@ class CAViewModel @Inject constructor(
                         //Create new user
                         db.collection(COLLECTION_USER).document(uid).set(userData)
                         inProgress.value = false
+                        getUserData(uid)
                     }
                 }
                 .addOnFailureListener {
@@ -102,6 +115,21 @@ class CAViewModel @Inject constructor(
 
         }
 
+    }
+
+    private fun getUserData(uid: String){
+        inProgress.value = true
+        db.collection(COLLECTION_USER).document(uid)
+            .addSnapshotListener { value, error ->
+                if (error != null){
+                    handleException(error, "Cannot retrieve user data")
+                }
+                if (value != null){
+                    val user = value.toObject<UserData>()
+                    userData.value = user
+                    inProgress.value = false
+                }
+            }
     }
 
     private fun handleException(exception: Exception? = null, customMessage: String = ""){

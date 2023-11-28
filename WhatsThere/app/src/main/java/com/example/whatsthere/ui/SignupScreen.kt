@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.whatsthere.CAViewModel
+import com.example.whatsthere.CheckSignedIn
 import com.example.whatsthere.CommonProgressSpinner
 import com.example.whatsthere.DestinationScreen
 import com.example.whatsthere.R
@@ -38,6 +39,7 @@ import com.example.whatsthere.navigateTo
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController, vm: CAViewModel) {
+    CheckSignedIn(vm = vm, navController = navController)
 
     Box(modifier = Modifier.fillMaxSize()) {
 
