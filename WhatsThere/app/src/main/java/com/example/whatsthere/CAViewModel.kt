@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.whatsthere.data.COLLECTION_USER
 import com.example.whatsthere.data.Event
+import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -43,6 +44,7 @@ class CAViewModel @Inject constructor(
                             if (task.isSuccessful){
                                singedIn.value = true
                                 //crate profile
+                                createOrUpdateProfile(name = name, number = number)
                             }else
                                 handleException(task.exception, "Sign up failed")
                         }
@@ -53,6 +55,52 @@ class CAViewModel @Inject constructor(
             .addOnFailureListener{
                 handleException(it)
             }
+
+    }
+
+    private fun createOrUpdateProfile(
+
+        name: String? = null,
+        number: String? = null,
+        imageUrl: String? = null
+
+    ){
+
+        val uid = auth.currentUser?.uid
+        val userData = UserData(
+            userId = uid,
+            name = name,
+            number = number,
+            imageUrl = imageUrl
+        )
+
+        uid?.let { uid ->
+
+            inProgress.value = true
+            db.collection(COLLECTION_USER).document(uid)
+                .get()
+                .addOnSuccessListener {
+                    if (it.exists()){
+                        //update existing user
+                        it.reference.update(userData.toMap())
+                            .addOnSuccessListener {
+                                inProgress.value = false
+                            }
+                            .addOnFailureListener {
+                                handleException(it, "Cannot update user")
+                            }
+                    }
+                    else {
+                        //Create new user
+                        db.collection(COLLECTION_USER).document(uid).set(userData)
+                        inProgress.value = false
+                    }
+                }
+                .addOnFailureListener {
+                    handleException(it, "Cannot retrevie user - no connection?")
+                }
+
+        }
 
     }
 
