@@ -139,6 +139,10 @@ class CAViewModel @Inject constructor(
 
     }
 
+    fun updateProfileData(name: String, number: String){
+        createOrUpdateProfile(name = name, number = number)
+    }
+
     private fun getUserData(uid: String){
         inProgress.value = true
         db.collection(COLLECTION_USER).document(uid)

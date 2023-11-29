@@ -60,7 +60,7 @@ fun ProfileScreen(navController: NavController, vm: CAViewModel) {
                 onNumberChange = { number = it },
                 onSave = {
                     focus.clearFocus(force = true)
-                    //call vm to update profile
+                    vm.updateProfileData(name, number)
                 },
                 onBack = {
                     focus.clearFocus(force = true)
