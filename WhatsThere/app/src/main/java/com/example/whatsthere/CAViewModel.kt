@@ -1,5 +1,6 @@
 package com.example.whatsthere
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,6 +13,7 @@ import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -173,6 +175,31 @@ class CAViewModel @Inject constructor(
         popupNotification.value = Event(message)
 
         inProgress.value = false
+    }
+
+    private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit){
+        inProgress.value = true
+
+        val storageRef = storage.reference
+        val uuid = UUID.randomUUID()
+        val imageRef = storageRef.child("image/$uuid")
+        val uploadTask = imageRef.putFile(uri)
+
+        uploadTask
+            .addOnSuccessListener {
+                val result = it.metadata?.reference?.downloadUrl
+                result?.addOnSuccessListener(onSuccess)
+                inProgress.value = false
+            }
+            .addOnFailureListener{
+                handleException(it)
+            }
+    }
+
+    fun uploadProfileImage(uri: Uri){
+        uploadImage(uri){
+            createOrUpdateProfile(imageUrl = it.toString())
+        }
     }
 
 // For popUp error test
