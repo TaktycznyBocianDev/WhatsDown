@@ -3,14 +3,19 @@ package com.example.whatsthere
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
+import com.example.whatsthere.data.COLLECTION_CHAT
 import com.example.whatsthere.data.COLLECTION_USER
 import com.example.whatsthere.data.ChatData
+import com.example.whatsthere.data.ChatUser
 import com.example.whatsthere.data.Event
 import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
@@ -206,6 +211,60 @@ class CAViewModel @Inject constructor(
         }
     }
 
+    fun onAddChat(number: String){
+        if (number.isEmpty() or !number.isDigitsOnly()) handleException(customMessage = "Number must contain only digits")
+        else{
+            db.collection(COLLECTION_CHAT)
+                .where(
+                    Filter.or(
+                        Filter.and(
+                            Filter.equalTo("user1.number", number),
+                            Filter.equalTo("user2.number", userData.value?.number)
+                        ),
+                        Filter.and(
+                            Filter.equalTo("user1.number", userData.value?.number),
+                            Filter.equalTo("user2.number", number)
+                        )
+                    )
+                )
+                .get()
+                .addOnSuccessListener {
+                    if (it.isEmpty){
+                        db.collection(COLLECTION_USER).whereEqualTo("number", number)
+                            .get()
+                            .addOnSuccessListener {
+                                if (it.isEmpty) handleException(customMessage = "Cannot fint user with this number")
+                                else{
+                                    val chatPartner = it.toObjects<UserData>()[0]
+                                    val id = db.collection(COLLECTION_CHAT).document().id
+                                    val chat = ChatData(
+                                        id,
+                                        ChatUser(
+                                            userData.value?.userId,
+                                            userData.value?.name,
+                                            userData.value?.imageUrl,
+                                            userData.value?.number
+                                        ),
+                                        ChatUser(
+                                            chatPartner.userId,
+                                            chatPartner.name,
+                                            chatPartner.imageUrl,
+                                            chatPartner.number
+                                        )
+                                    )
+                                    db.collection(COLLECTION_CHAT).document(id).set(chat)
+                                }
+                            }
+                            .addOnFailureListener {
+                                handleException(it)
+                            }
+                    }
+                    else{
+                        handleException(customMessage = "Chat already exists!")
+                    }
+                }
+        }
+    }
 // For popUp error test
 //    init {
 //        handleException(customMessage = "Test")

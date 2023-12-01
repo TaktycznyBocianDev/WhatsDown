@@ -45,7 +45,7 @@ fun ChatListScreen(navController: NavController, vm: CAViewModel) {
         val onFabClick: () -> Unit = { showDialog.value = true }
         val onDismiss: () -> Unit = { showDialog.value = false }
         val onAddChat: (String) -> Unit = {
-            //call the VM
+            vm.onAddChat(it)
             showDialog.value = false
         }
 
