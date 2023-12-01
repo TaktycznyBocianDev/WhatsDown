@@ -165,6 +165,7 @@ class CAViewModel @Inject constructor(
                     val user = value.toObject<UserData>()
                     userData.value = user
                     inProgress.value = false
+                    populateChats()
                 }
             }
     }
@@ -174,6 +175,7 @@ class CAViewModel @Inject constructor(
         singedIn.value = false
         userData.value = null
         popupNotification.value = Event("Logged out")
+        chats.value = listOf()
     }
 
     private fun handleException(exception: Exception? = null, customMessage: String = ""){
@@ -264,6 +266,23 @@ class CAViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    private fun populateChats(){
+        inProgressChats.value = true
+        db.collection(COLLECTION_CHAT).where(
+            Filter.or(
+                Filter.equalTo("user1.userId", userData.value?.userId),
+                Filter.equalTo("user2.userId", userData.value?.userId)
+            )
+        )
+            .addSnapshotListener{ value, error ->
+                if (error != null) handleException(error)
+                if (value != null){
+                    chats.value = value.documents.mapNotNull { it.toObject<ChatData>() }
+                    inProgressChats.value = false
+                }
+            }
     }
 // For popUp error test
 //    init {

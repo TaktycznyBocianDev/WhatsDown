@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.whatsthere.CAViewModel
 import com.example.whatsthere.CommonProgressSpinner
+import com.example.whatsthere.CommonRow
+import com.example.whatsthere.DestinationScreen
+import com.example.whatsthere.navigateTo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +79,20 @@ fun ChatListScreen(navController: NavController, vm: CAViewModel) {
                             Text(text = "No avaible chats")
                         }
                     else {
-                        //Fill in with chats lazyColumn
+                        LazyColumn(modifier = Modifier.weight(1f)) {
+                            items(chats) { chat ->
+                                val chatUser = if (chat.user1.userId == userData?.userId) chat.user2
+                                else chat.user1
+
+                                CommonRow(
+                                    imageUrl = chatUser.imageUrl ?: "",
+                                    name = chatUser.name
+                                ) {
+                                    chat.chatId?.let{id -> navigateTo(navController, DestinationScreen.SingleChat.createRoute(id)) }
+                                }
+
+                            }
+                        }
                     }
 
                     BottomNavigationMenu(
@@ -101,7 +119,8 @@ fun FAB(
     if (showDialog)
         AlertDialog(onDismissRequest = {
             onDismiss.invoke()
-            addChatNumber.value = "" },
+            addChatNumber.value = ""
+        },
             confirmButton = {
                 Button(onClick = {
                     onAddChat(addChatNumber.value)
