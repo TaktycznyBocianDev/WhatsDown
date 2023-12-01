@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.whatsthere.data.COLLECTION_USER
+import com.example.whatsthere.data.ChatData
 import com.example.whatsthere.data.Event
 import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
@@ -32,6 +33,9 @@ class CAViewModel @Inject constructor(
     val singedIn = mutableStateOf(false)
 
     val userData = mutableStateOf<UserData?>(null)
+
+    val chats = mutableStateOf<List<ChatData>>(listOf())
+    val inProgressChats = mutableStateOf(false)
 
     init {
         //auth.signOut() //little cheat to work with login
