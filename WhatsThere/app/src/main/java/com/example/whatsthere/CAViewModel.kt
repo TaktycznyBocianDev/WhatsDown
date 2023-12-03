@@ -16,6 +16,7 @@ import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.storage.FirebaseStorage
@@ -47,6 +48,8 @@ class CAViewModel @Inject constructor(
 
     val chatMessages = mutableStateOf<List<Message>>(listOf())
     val inProgressChatMessages = mutableStateOf(false)
+
+    var currentCHatMessagesListener: ListenerRegistration? = null
 
     init {
         //auth.signOut() //little cheat to work with login
@@ -300,6 +303,29 @@ class CAViewModel @Inject constructor(
             .collection(COLLECTION_MESSAGES)
             .document()
             .set(msg)
+    }
+
+    fun populateChat(chatId: String){
+        inProgressChatMessages.value = true
+        currentCHatMessagesListener = db.collection(COLLECTION_CHAT)
+            .document(chatId)
+            .collection(COLLECTION_MESSAGES)
+            .addSnapshotListener {value, error ->
+                if (error != null)
+                    handleException(error)
+                if (value != null)
+                    chatMessages.value  = value.documents
+                        .mapNotNull { it.toObject<Message>()}
+                        .sortedBy { it.timeStamp }
+
+                inProgressChatMessages.value = false
+
+            }
+    }
+
+    fun depopulateChat(){
+        chatMessages.value = listOf()
+        currentCHatMessagesListener = null
     }
 
 // For popUp error test
