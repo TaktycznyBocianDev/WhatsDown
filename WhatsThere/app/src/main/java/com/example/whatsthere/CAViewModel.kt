@@ -6,10 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.whatsthere.data.COLLECTION_CHAT
+import com.example.whatsthere.data.COLLECTION_MESSAGES
 import com.example.whatsthere.data.COLLECTION_USER
 import com.example.whatsthere.data.ChatData
 import com.example.whatsthere.data.ChatUser
 import com.example.whatsthere.data.Event
+import com.example.whatsthere.data.Message
 import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Filter
@@ -19,6 +21,7 @@ import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
+import java.util.Calendar
 import java.util.UUID
 import javax.inject.Inject
 
@@ -41,6 +44,9 @@ class CAViewModel @Inject constructor(
 
     val chats = mutableStateOf<List<ChatData>>(listOf())
     val inProgressChats = mutableStateOf(false)
+
+    val chatMessages = mutableStateOf<List<Message>>(listOf())
+    val inProgressChatMessages = mutableStateOf(false)
 
     init {
         //auth.signOut() //little cheat to work with login
@@ -284,6 +290,18 @@ class CAViewModel @Inject constructor(
                 }
             }
     }
+
+    fun onSendReply(chatId: String, message: String){
+        val time = Calendar.getInstance().time.toString()
+        val msg = Message(userData.value?.userId, message, time)
+
+        db.collection(COLLECTION_CHAT)
+            .document(chatId)
+            .collection(COLLECTION_MESSAGES)
+            .document()
+            .set(msg)
+    }
+
 // For popUp error test
 //    init {
 //        handleException(customMessage = "Test")
