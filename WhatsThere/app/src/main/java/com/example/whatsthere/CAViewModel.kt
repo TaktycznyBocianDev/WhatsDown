@@ -7,11 +7,13 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import com.example.whatsthere.data.COLLECTION_CHAT
 import com.example.whatsthere.data.COLLECTION_MESSAGES
+import com.example.whatsthere.data.COLLECTION_STATUS
 import com.example.whatsthere.data.COLLECTION_USER
 import com.example.whatsthere.data.ChatData
 import com.example.whatsthere.data.ChatUser
 import com.example.whatsthere.data.Event
 import com.example.whatsthere.data.Message
+import com.example.whatsthere.data.Status
 import com.example.whatsthere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.Filter
@@ -50,6 +52,9 @@ class CAViewModel @Inject constructor(
     val inProgressChatMessages = mutableStateOf(false)
 
     var currentCHatMessagesListener: ListenerRegistration? = null
+
+    val status = mutableStateOf<List<Status>>(listOf())
+    val inProgressStatus = mutableStateOf(false)
 
     init {
         //auth.signOut() //little cheat to work with login
@@ -326,6 +331,26 @@ class CAViewModel @Inject constructor(
     fun depopulateChat(){
         chatMessages.value = listOf()
         currentCHatMessagesListener = null
+    }
+
+    private fun createStatus(imageUrl: String){
+        val newStatus = Status(
+            ChatUser(
+                userData.value?.userId,
+                userData.value?.name,
+                userData.value?.imageUrl,
+                userData.value?.number
+            ),
+            imageUrl,
+            System.currentTimeMillis()
+        )
+        db.collection(COLLECTION_STATUS).document().set(newStatus)
+    }
+
+    fun uploadStatus(imageUri: Uri){
+        uploadImage(imageUri){
+            createStatus(imageUrl = it.toString())
+        }
     }
 
 // For popUp error test
