@@ -180,6 +180,7 @@ class CAViewModel @Inject constructor(
                     userData.value = user
                     inProgress.value = false
                     populateChats()
+                    populateStatuses()
                 }
             }
     }
@@ -353,6 +354,41 @@ class CAViewModel @Inject constructor(
         }
     }
 
+    private fun populateStatuses(){
+        inProgressStatus.value = true
+        val milliTimeDelta = 24L * 60 * 60 * 1000
+        val cutoff = System.currentTimeMillis() - milliTimeDelta
+
+        db.collection(COLLECTION_CHAT).where(
+            Filter.or(
+                Filter.equalTo("user.userId", userData.value?.userId),
+                Filter.equalTo("user2.userId", userData.value?.userId)
+            )
+        )
+            .addSnapshotListener{ value, error ->
+                if (error != null) handleException(error)
+                if (value != null){
+                    val currentConnections = arrayListOf(userData.value?.userId)
+                    val chats = value.toObjects<ChatData>()
+                    chats.forEach{ chat ->
+                        if (chat.user1.userId == userData.value?.userId)
+                            currentConnections.add(chat.user2.userId)
+                        else
+                            currentConnections.add(chat.user1.userId)
+                    }
+
+                    db.collection(COLLECTION_STATUS)
+                        .whereGreaterThan("timestamp", cutoff)
+                        .whereIn("user.userId", currentConnections)
+                        .addSnapshotListener{value, error ->
+                            if (error != null) handleException(error)
+                            if (value != null) status.value = value.toObjects()
+                            inProgressStatus.value = false
+                        }
+                }
+
+            }
+    }
 // For popUp error test
 //    init {
 //        handleException(customMessage = "Test")
