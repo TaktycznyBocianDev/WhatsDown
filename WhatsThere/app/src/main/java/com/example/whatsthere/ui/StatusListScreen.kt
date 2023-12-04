@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.whatsthere.CAViewModel
@@ -86,7 +84,7 @@ fun StatusListScreen(navController: NavController, vm: CAViewModel) {
                             ) {
                                 navigateTo(
                                     navController,
-                                    DestinationScreen.SingleStatus.createRoute(myStatuses[0].user?.userId)
+                                    DestinationScreen.SingleStatusScreen.createRoute(myStatuses[0].user?.userId)
                                 )
                             }
 
@@ -101,7 +99,7 @@ fun StatusListScreen(navController: NavController, vm: CAViewModel) {
                                 ) {
                                     navigateTo(
                                         navController,
-                                        DestinationScreen.SingleStatus.createRoute(user?.userId)
+                                        DestinationScreen.SingleStatusScreen.createRoute(user?.userId)
                                     )
                                 }
                             }
