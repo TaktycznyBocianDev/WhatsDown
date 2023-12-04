@@ -32,6 +32,7 @@ import com.example.whatsthere.CAViewModel
 import com.example.whatsthere.CommonProgressSpinner
 import com.example.whatsthere.CommonRow
 import com.example.whatsthere.DestinationScreen
+import com.example.whatsthere.TitleText
 import com.example.whatsthere.navigateTo
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,6 +69,7 @@ fun ChatListScreen(navController: NavController, vm: CAViewModel) {
                         .fillMaxSize()
                         .padding(it)
                 ) {
+                    TitleText(txt = "Chats")
                     if (chats.isEmpty())
                         Column(
                             modifier = Modifier
